@@ -64,6 +64,7 @@ colnames(DT_6) <- c('ID','edad', 'genero', 'n_educ', 'altura', 'peso', 'f_hambre
 Además, le saco las tildes a los datos para que no generen problemas más adelante.
 
 ```{r}
+#Saco las tildes a las columnas que voy a analizar
 DT$c_snacks <- stri_trans_general(str = DT$c_snacks, id = "Latin-ASCII")
 DT$f_hambre <- stri_trans_general(str = DT$f_hambre, id = "Latin-ASCII")
 DT$c_grasa <- stri_trans_general(str = DT$c_grasa, id = "Latin-ASCII")
@@ -102,10 +103,10 @@ cor_fem
 cor_mas
 ```
 
-Realizo un gráfico de las correlaciones como heatmaps. Abrevio algunos nombres de variables para facilitar la lectura.
+Realizo un gráfico de las correlaciones como heatmaps.
 
 ```{r, fig.dim = c(12, 7)}
-#Reformateo las matrices de correlacion para 
+#Reformateo las matrices de correlación
 melted_cormat1 <- melt(cor_fem)
 melted_cormat2 <- melt(cor_mas)
 
@@ -142,7 +143,7 @@ El consumo de alcohol se correlaciona positivamente con el peso, en mayor medida
 
 Los actividad física semanal se correlaciona positivamente con el peso, y es la única correlación más acentuada en el género femenino.
 
-## Para las categorías de la variable frecuencia de hambre mensual, analice gráficamente la distribución entérminos de frecuencia relativa de:
+## Para las categorías de la variable frecuencia de hambre mensual, analice gráficamente la distribución en términos de frecuencia relativa de:
 
 ## a) El consumo semanal de verdura.
 
@@ -154,7 +155,7 @@ Genero el gráfico del consumo semanal de verdura para distintos niveles de frec
 
 ```{r, fig.dim = c(12, 7)}
 
-
+DT$f_hambre <- factor(DT$f_hambre, c("Nunca", "Rara vez", "Algunas veces", "Casi siempre", "Siempre"))
 
 #Corto los datos según el valor de f_hambre
 h0=DT[f_hambre=="Nunca"]
@@ -206,7 +207,7 @@ figure <- ggarrange(p5, p6, p7, p8, p9,
 figure
 
 #Observaciones por nivel de f_hambre
-c(dim(h0)[1], dim(h1)[1],dim(h2)[1],dim(h3)[1], dim(h4)[1])
+as.data.frame(table(DT$f_hambre))
 ```
 
 Se observa que la cantidad de datos va disminuyendo para mayor frecuencia de hambre. En particular "casi siempre" y "siempre tienen menos de 100 casos cada una, por lo que sus distribuciones son poco representativas.
@@ -331,7 +332,7 @@ Los coeficientes asociados a cada nivel de c_snacks se corresponden a la diferen
 
 El coeficiente beta_5 corresponde a la diferencia predicha entre hombres y mujeres de la constante multiplicativa que relaciona la variabción de peso en función de la edad, manteniendo las demás variables fijas. Para mujeres, esta constante multiplicativa se aproxima con beta_2, para hombres con beta_2+beta_5. El coeficiente es significativo para nuestra eleccion de umbral de 0.05, con un p-valor de 0.02880.
 
-En total, el modelo explica una variabilidad de 0.3585, mayor a la del modelo anterior. Su R\^2 ajustado también es mayor, por lo que la mayor explicación no se debe únicamente a la mayor cantidad de parámetros.
+En total, el modelo explica una variabilidad de 0.3585, mayor a la del modelo anterior. Su R\^2 ajustado también es mayor, por lo que la mayor explicación no se debe únicamente a la mayor cantidad de parámetros, también a su calidad.
 
 ### En caso de detectar que existen categorías no significativas de la variable consumoSemanalSnacks evaluar si la variable es significativa en su conjunto y, en caso afirmativo, proponer una redefinición de las mismas que permita obtener una mayor proporción de categorías significativas individualmente. Luego, analizar si existen cambios en la variabilidad explicada por el modelo.
 
@@ -378,7 +379,7 @@ En este nuevo modelo, todas los niveles de c_snacks son significativos. La varia
 
 Modelo propio 1) Observo que en el dataset hay 5 variables ordinales que describen la frecuencia de consumos de ciertos tipos alimentos. Todas ellas tienen 8 niveles que cubren los mismos intervalos de frecuencia, que van desde cero a más de de 4 veces diarias.
 
-Con el fin de examinar si dichas frecuencias tienen una correlación lineal con el peso, transformo dichas variables ordinales en variables numéricas. A cada nivel lo mapeo por valor medio de frecuencia del intervalo, excepto la categoría "más de de 4 veces diarias" que la mapeo a 4.5 como primer intento.
+Con el fin de examinar si dichas frecuencias tienen una correlación lineal con el peso, transformo dichas variables ordinales en variables numéricas. A cada nivel lo mapeo por valor medio de frecuencia del intervalo, por ejemplo "1 a 3 veces cada 7 dias" se transforma en 1.5/7. La categoría "más de de 4 veces diarias" que la mapeo a 4.5 como primer aproximación.
 
 Agrego además las 3 variables numéricas todavía no probadas, c_rapida, c_alcohol y a_fisica.
 
@@ -394,7 +395,7 @@ return(DT$new)
   
 }
 
-
+#Analogo en el dataset DT_test
 numerizar_test  <- function( variable )
 {
 
@@ -405,7 +406,7 @@ return(DT_test$new)
 }
 ```
 
-Ahora utilizo la función
+Ahora utilizo la función:
 
 ```{r}
 #Creo las 5 nuevas variables numéricas
@@ -432,7 +433,7 @@ summary(modelo_propio_1)
 
 Observo que la única variable númerica agregada significativa en nuestro modelo lineal es n_gaseosa. Esto no implica que las variables ordinales originales serían no significativas en caso de ser agregradas, se deberían analizar nivel por nivel. Pero sí implica que c_gaseosa tiene potencial explicativo.
 
-Se probó cambiar los valores de frecuencia al cual mapeo el nivel "4 veces o más", de 4.5 a 4, 5, 6 y 7. Se obvervo que el p-valor de n_gaseosa, que es la única variable que tiene buen valor explicativo, disminuye. Preferimos quedarnos entonces con 4,5.
+Se probó cambiar los valores de frecuencia al cual mapeo el nivel "4 veces o más", de 4.5 a 4, 5, 6 y 7. Se obvervó que el p-valor de n_gaseosa, que es la única variable que tiene buen valor explicativo, disminuye. Preferimos quedarnos entonces con 4,5.
 
 Modelo propio 2) En este modelo trataremos de aplicar lo aprendido en los puntos anteriores.
 
@@ -476,12 +477,20 @@ Observamos que los 3 niveles más bajos de c_gaseosa no son significativos, por 
 
 Peculiarmente el parámetro asociado a "3 veces al día" tiene menor magnitud (en valor absoluto) y p-valor que el asociado a "2 veces al día". Hay que recordar sin embargo que es el nivel menos representado en la muestra, con solo 281 ocurrencias. En todo caso lo agrupamos con el nivel "2 veces al día".
 
+Por último agrupamos el nivel "1 a 3 veces al día" y "4 o más veces al día"al basal ya no es significativo.
+
 ```{r}
 
-#Junto estos 3 niveles
+#Junto los niveles de Gasoesa
 DT$c_gaseosa <- fct_collapse(DT$c_gaseosa, "No tomA(C) gaseosas en los Aºltimos 7 dA-as" = c("Dato perdido", "No tomA(C) gaseosas en los Aºltimos 7 dA-as", "1 vez al dA-a","1 a 3 veces durante los Aºltimos 7 dA-as", "4 a 6 veces durante los Aºltimos 7 dA-as"), "2 o 3 veces al dia" = c("2 veces al dA-a","3 veces al dA-a"))
 
 DT_test$c_gaseosa <- fct_collapse(DT_test$c_gaseosa, "No tomA(C) gaseosas en los Aºltimos 7 dA-as" = c("Dato perdido", "No tomA(C) gaseosas en los Aºltimos 7 dA-as", "1 vez al dA-a","1 a 3 veces durante los Aºltimos 7 dA-as", "4 a 6 veces durante los Aºltimos 7 dA-as"), "2 o 3 veces al dia" = c("2 veces al dA-a","3 veces al dA-a"))
+
+
+#Junto los niveles de snacks
+DT$c_snacks <- fct_collapse(DT$c_snacks, "No comA- comida salada o snacks en los Aºltimos 7 dA-as" = c("No comA- comida salada o snacks en los Aºltimos 7 dA-as", "1 a 3 veces al dia"))
+DT_test$c_snacks <- fct_collapse(DT_test$c_snacks, "No comA- comida salada o snacks en los Aºltimos 7 dA-as" = c("No comA- comida salada o snacks en los Aºltimos 7 dA-as", "1 a 3 veces al dia"))
+
 
 #Ajustamos un modelo lineal múltiple
 modelo_propio_2 <- lm(peso ~ altura*genero + edad + c_gaseosa + c_snacks, data = DT)
@@ -492,9 +501,12 @@ modelo_propio_2 <- lm(peso ~ altura*genero + edad + c_gaseosa + c_snacks, data =
 summary(modelo_propio_2)
 ```
 
-### Evaluar la performance del modelo inicial, el modelo categóricas con las categorías redefinidas de la variable consumoSemanalSnacks y los modelos desarrollados en este punto en el dataset de entrenamiento y evaluación (usar dataset "encuesta_salud_test.csv"). La evaluación de performance consiste en comparar la performance en términos del R cuadrado ajustado, RMSE y MAE sobre el set de entrenamiento y en términos de RMSE y MAE sobre el set de evaluación.  ¿Cuál es el mejor modelo para nuestro objetivo de predecir el peso? ¿Por qué?
+Sobre los mismos datos de entrenamiento, este modelo tiene el R cuadrado y R cuadrado ajustado más altos hasta ahora, y ningún parámetro no significativo.
+
+### Evaluar la performance del modelo inicial, el modelo categóricas con las categorías redefinidas de la variable consumoSemanalSnacks y los modelos desarrollados en este punto en el dataset de entrenamiento y evaluación (usar dataset "encuesta_salud_test.csv"). La evaluación de performance consiste en comparar la performance en términos del R cuadrado ajustado, RMSE y MAE sobre el set de entrenamiento y en términos de RMSE y MAE sobre el set de evaluación. ¿Cuál es el mejor modelo para nuestro objetivo de predecir el peso? ¿Por qué?
 
 Los R cuadrado ajustados para el set de entrenamiento ya los calculé, son 0.3539, 0.3576, 0.3559 y 0.3594, correspondientes al modelo inicial, categorías, propio 1 y propio 2. Calculo ahora los RMSE y MAE:
+
 ```{r}
 
 #obtengo los valores reales
@@ -545,12 +557,13 @@ df <- data.frame (modelo= c("inicial", "categorias", "propio 1", "propio 2"),
 
 df
 ```
+
 El mejor modelo para predecir el peso es el de categorías, porque es el que tiene menores errores en el set de testeo. El modelo propio 2 es el que mejor ajusta a los datos de entrenamiento (fue construido para esto), pero evidentemente sufre de sobreajuste porque sus errores en el set de validación son muy altos.
 
-###5) Diagnóstico del modelo
-###Analizar en profundidad el cumplimiento de los supuestos del modelo lineal para el modelo inicial.
+### 5) Diagnóstico del modelo ###Analizar en profundidad el cumplimiento de los supuestos del modelo lineal para el modelo inicial.
 
 Comenzamos por graficar la distribución de todos los residuos.
+
 ```{r}
 #calculo los errores
 pesos <- data.frame( actual=actual_train, predicted=predicted_train_ini, errores=predicted_train_ini-actual_train )
@@ -569,7 +582,8 @@ ggplot(data.frame(x = den$x, y = den$y)) +
 
 
 ```
-Se observa que la distribución es altamaente asimétrica, con un pico de densidad corrido hacia los valores positivos de residuos. El modelo sobreestima el peso en más cantidad de registros, y subestima con mayores magnitudes para compensar.
+
+Se observa que la distribución es altamaente asimétrica, con un pico de densidad corrido hacia los valores positivos de residuos. El modelo sobreestima el peso en más cantidad de registros, y subestima con mayores magnitudes para compensar y promediar error cero.
 
 Hacemos a continuación los gráficos de las distribuciones de error para cada cuartil de peso real:
 
@@ -607,26 +621,32 @@ p4 <- ggplot(data.frame(x = den4$x, y = den4$y)) +
         aes(x = x, y = y) + geom_line() + geom_vline(aes(xintercept=0),
             color="blue", linetype="dashed", size=1) + scale_y_continuous(expand = c(0, 0), limits = c(0, 0.075)) +                                geom_vline(aes(xintercept=mean(d)), color="red", linetype="dashed", size=1)
 
+#Uno los gráficos
 figure <- ggarrange(p1, p2,p3,p4,
                     ncol = 2, nrow = 2,
                     labels = c("Primer cuartil", "Segundo cuartil", "Tercer cuartil", "Cuarto cuartil"),
                     common.legend = TRUE, legend = "bottom")
 figure
 ```
-La linea vertical roja marca el valor medio de los errores en cada cuartil. Se nota que el modelo sobrestima en promedio para el primer y segundo cuartil, y subestima en promedio en el tercero y cuarto. La forma de las distribuciones también cambia respecto al peso, por lo que no se cumple la homocelasticidad.
 
-Hacemos gráficos de Residuos vs valores predichos, Normal QQ plot, Residual vs leverage.
+La linea vertical roja marca el valor medio de los errores en cada cuartil. Se nota que el modelo sobrestima en promedio para el primer y segundo cuartil, y subestima en promedio en el tercero y cuarto. La forma de las distribuciones también cambia respecto al peso, por lo que no se cumple la homoelasticidad.
+
+Hacemos gráficos de Residuos vs valores predichos, Normal QQ plot, scale location y Residual vs leverage.
+
 ```{r}
 plot(modelo_inicial)
 ```
-En Normal QQ plot, vemos que los residuos se desvian mucho de la distribución normal para el extremo derecho. En Residual vs leverage vemos que hay puntos con leverage alto.
+
+En Normal QQ plot, vemos que los residuos se desvian mucho de la distribución normal para el extremo derecho.
 
 Concluimos entonces que el modelo inicial no cumple con los supuestos del modelo lineal.
 
 ### 6) Modelo Robusto
-### Leer el archivo “encuesta_salud_modelo6.csv”. Este último consiste en el dataset original de train con la incorporación de algunas observaciones adicionales que pueden incluir valores atípicos. En particular, observar la relación entre peso y altura ¿Qué ocurre con estos nuevos datos?
+
+### Leer el archivo "encuesta_salud_modelo6.csv". Este último consiste en el dataset original de train con la incorporación de algunas observaciones adicionales que pueden incluir valores atípicos. En particular, observar la relación entre peso y altura ¿Qué ocurre con estos nuevos datos?
 
 Comenzamos graficando la relación peso y altura en el dataset original de entrenamiento y el nuevo dataset:
+
 ```{r}
 #El nuevo dataset es DT_6
 
@@ -645,13 +665,13 @@ figure
 
 
 ```
+
 Observo que estos nuevos datos se encuentran muy por arriba de los demás en términos de peso en función de la altura, son valores atípicos.
-
-
 
 ### Entrenar el modelo inicial con estos nuevos datos y comentar qué se observa en los coeficientes estimados y las métricas de evaluación (R cuadrado ajustado, RMSE y MAE) respecto al modelo entrenado con el set de entrenamiento original.
 
 Explicito los detalles del modelo inicial sobre los datos iniciales y sobre los nuevos:
+
 ```{r}
 
 #Ajustamos el modelo inicial al dataset train
@@ -673,9 +693,11 @@ summary(modelo_inicial_6)
 
 
 ```
+
 Observo que los coeficientes que son significativos (los correspondientes a intercept, altura, edad y genero masculino), cambian drásticamente por la adición de estos datos atípicos. El que menos cambia, en porcentaje, es el de edad, de 1.406727 a 1.86859. Los coeficientes correspondientes a a_fisica y c_alcohol también sufren cambios, pero se mantienen pequeños y no son significativos en ningún modelo.
 
 El R cuadrado ajustado disminuye a menos de un tercio, de 0.3539 a 0.1095, por los datos agregados.
+
 Calculo luego el RMSE Y MAE:
 
 ```{r}
@@ -704,22 +726,50 @@ df <- data.frame (datos= c("originales", "nuevos"),
 
 df
 ```
-Como es de esperar, el MAE y RMSE aumentan al incluir los datos nuevos. 
 
+El MAE y RMSE aumentan. Esto ocurriría siempre que se agregan nuevos nuevos datos y se mantiene la misma especificación de modelo. Sin embargo, en este caso, el aumento de los errores es desproporcionado (+58.8% del RMSE y +38.4% del MAE) respecto al aumento de cantidad de registros del conjunto, que es solo del 1.49%. Esta es una consecuencia de que los nuevos datos son muy atípicos en comparación con la distribución de los originales.
 
+### Entrenar un modelo robusto con la misma especificación que el modelo inicial sobre los nuevos datos. 
 
+Ajustamos un modelo robusto usando estimación M.
 ```{r}
-
-#Ajustamos el modelo inicial al nuevo dataset
-modelo_inicial <- rlm(peso ~ altura+edad+genero+a_fisica+c_alcohol, data = DT_6)
+#Ajustamos el modelo robusto al nuevo dataset
+modelo_r_6 <- rlm(peso ~ altura+edad+genero+a_fisica+c_alcohol, data = DT_6)
 
 #Resumen del modelo
-summary(modelo_inicial)
-
-predicted_rob <- predict(modelo_inicial)
-
-predicted_test_pr2 <- predict.lm(modelo_propio_2, DT_test)
-
-#Calculo los RMSE en train
-RMSE_train_ini <- rmse(actual_train, predicted_train_ini
+summary(modelo_r_6)
 ```
+### Comparar los coeficientes y su performance (RMSE y MAE) respecto al modelo inicial no robusto entrenado en este punto. ¿Qué puede concluir al respecto?
+
+Observo que los coeficientes del modelo robusto intercept, altura, edad y genero masculino son más similares a los del modelo inicial sin los datos nuevos que los del modelo inicial con los datos nuevos.
+
+Calculamos el MAE Y RMSE del modelo robusto:
+```{r}
+#Calculamos los errores
+predicted_rob <- predict(modelo_r_6)
+
+#Calculo el RMSE
+RMSE_r_6 <- rmse(actual_6, predicted_rob)
+
+#Calculo el MAE
+MAE_r_6 <- mae(actual_6, predicted_rob)
+
+
+
+df <- data.frame (datos= c("modelo inicial", "robusto"),
+                  rmse  = c( RMSE_6_ini, RMSE_r_6),
+                  mae=c(MAE_6_ini, MAE_r_6))
+
+df
+```
+El RMSE es menor para el modelo inicial, el MAE es menor para el modelo robusto. 
+
+Estos resultados son consistentes con nuestro entendimiento de los modelos:
+
+El modelo clásico se obtiene minimizando la suma de los errores cuadráticos, por lo que obtiene el menor RMSE posible, dados los constraints de su formula.
+
+Elevar los errores al cuadrado antes de sumarlos aumenta desproporcionadamente la magnitud de los errores grandes, por lo que el modelo clásico le da alta importancia a los valores atípicos. Esto se refleja en valores muy distintos de los coeficientes del modelo inicial al agregar unos pocos datos atípicos.
+
+El modelo robusto busca limitar el impacto de los valores atípicos, asignando iterativamente un peso cada residuo al cuadrado, en la suma a minimizar. Este peso es menor mientras más atípico es el valor, algo que se calcula en iteraciones anteriores. 
+
+Esto resulta (en comparación con el modelo clásico) en  coeficientes más similares a los de el modelo inicial sin los datos atípicos. Esta nueva forma de asignar pesos tiende a disminuir tambien en promedio los modulos de los errores, por lo que disminuye levemente el MAE.
